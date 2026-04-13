@@ -10,6 +10,5 @@ export default {
     gray: '#DDDDDD',
     blue: '#2563EB',
     orange: '#ff8c00'
-    
 
 };
