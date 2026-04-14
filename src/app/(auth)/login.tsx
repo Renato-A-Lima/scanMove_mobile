@@ -4,7 +4,6 @@ import * as SecureStore from 'expo-secure-store';
 import React, { useState } from 'react';
 import {
   Alert,
-  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -12,9 +11,11 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+import Logo from '@/components/Logo';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -107,10 +108,10 @@ const handleLogin = async () => {
 
 
 //Apenas de exemplo para teste de telas
-const mudaTela = () =>  {
-  console.log('Pressionado...')
-  router.replace('../telas/home');
-} 
+// const mudaTela = () =>  {
+//   console.log('Pressionado...')
+//   router.replace('../telas/home');
+// } 
 const mudaTelaCriarUsuario = () =>  {
   console.log('Pressionado...')
   router.replace('/cadastro');
@@ -124,12 +125,7 @@ const mudaTelaCriarUsuario = () =>  {
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-      <View style={styles.areaLogo}>
-        <Image
-          source={require('@/assets/logo.png')}
-          style={styles.logo}
-        />
-      </View>
+      <Logo />
 
       <Text style={styles.appSubtitle}>Gestão de viagens de campo</Text>
 
@@ -169,6 +165,7 @@ const mudaTelaCriarUsuario = () =>  {
                 value={senha}
                 onChangeText={setSenha}
                 returnKeyType="done"
+                keyboardType="number-pad"
                 onSubmitEditing={handleLogin}
               />
               <TouchableOpacity onPress={() => setMostrarSenha((v) => !v)}>
@@ -186,8 +183,8 @@ const mudaTelaCriarUsuario = () =>  {
             {/* Botão Login */}
             <TouchableOpacity
                 style={[styles.loginButton, loading && { opacity: 0.7 }]}
-                // onPress={handleLogin}
-                onPress={ mudaTela }   // Retirar - é para teste
+                onPress={handleLogin}
+                // onPress={ mudaTela }   // Retirar - é para teste
                 disabled={loading}
             >
                 <Text style={styles.loginButtonText}>
@@ -304,27 +301,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
   },
-  logo: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
   appSubtitle: {
     fontSize: 20,
     color: '#f6f6f6ff',
     marginBottom: 28,
     textAlign: 'center',
   },
-  areaLogo:{
-    width: 180,
-    height: 180,
-    borderRadius: 90,
-    overflow: 'hidden',
-    alignSelf: 'center',
-    marginTop: 70,
-    marginBottom: 10,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
-  }
 });

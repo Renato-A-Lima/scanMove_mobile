@@ -1,34 +1,23 @@
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
 import React, { useMemo, useState } from 'react';
 import {
-    Alert,
-    Pressable,
-    SafeAreaView,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  Alert,
+  Pressable,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-type Screen = 'register' | 'home';
-
-type TripStatus = 'EM_ANDAMENTO' | 'CONCLUIDA' | 'PENDENTE';
-
-type Trip = {
-  id: string;
-  company: string;
-  city: string;
-  date: string;
-  status: TripStatus;
-};
-
-type FormErrors = {
-  fullName?: string;
-  email?: string;
-  password?: string;
-};
+import Logo from '../../components/Logo';
+import type { FormErrors } from '../../entities/forms';
+import type { Trip } from '../../entities/trip';
+import type { Screen, TripStatus } from '../../entities/types';
 
 const initialTrips: Trip[] = [
   {
@@ -97,8 +86,9 @@ type RegisterScreenProps = {
 function RegisterScreen({ onSubmitSuccess }: RegisterScreenProps) {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('123456');
+  const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<FormErrors>({});
+  const [loading, setLoading] = useState(false);
 
   const validate = () => {
     const nextErrors: FormErrors = {};
@@ -123,13 +113,85 @@ function RegisterScreen({ onSubmitSuccess }: RegisterScreenProps) {
     return Object.keys(nextErrors).length === 0;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validate()) return;
-    onSubmitSuccess(fullName.trim());
+
+    try {
+      setLoading(true);
+
+      const apiUrl = process.env.EXPO_PUBLIC_API_URL;
+      console.log('API URL:', apiUrl);
+      console.log('URL CADASTRO:', `${apiUrl}/auth/register`);
+
+      if (!apiUrl) {
+        Alert.alert(
+          'Configuração inválida',
+          'A variável EXPO_PUBLIC_API_URL não foi definida.'
+        );
+        return;
+      }
+
+      const response = await fetch(`${apiUrl}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          nome: fullName.trim(),
+          email: email.trim().toLowerCase(),
+          senha: password,
+        }),
+      });
+
+      let data: any = null;
+      try {
+        data = await response.json();
+      } catch {
+        data = null;
+      }
+
+      if (!response.ok) {
+        const message =
+          data?.message && Array.isArray(data.message)
+            ? data.message.join('\n')
+            : data?.message || 'Erro ao criar a conta.';
+
+        Alert.alert('Erro no cadastro', message);
+        return;
+      }
+
+      const token = data?.access_token || data?.token;
+
+      if (!token) {
+        Alert.alert(
+          'Erro no cadastro',
+          'A API não retornou o token JWT.'
+        );
+        return;
+      }
+
+      await SecureStore.setItemAsync('token', token);
+
+      if (data?.user) {
+        await SecureStore.setItemAsync('user', JSON.stringify(data.user));
+      }
+
+      Alert.alert('Sucesso', 'Conta criada com sucesso!');
+      router.replace('../telas/home');
+    } catch (error: any) {
+      console.log('Erro cadastro:', error);
+      Alert.alert(
+        'Erro de conexão',
+        'Não foi possível conectar à API. Verifique se ela está rodando e se o IP está correto.'
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <View style={styles.registerContainer}>
+      <Logo />
       <View style={styles.registerCard}>
         <Text style={styles.registerTitle}>Criar conta</Text>
         <Text style={styles.registerSubtitle}>
@@ -166,12 +228,21 @@ function RegisterScreen({ onSubmitSuccess }: RegisterScreenProps) {
           error={errors.password}
         />
 
-        <Pressable style={styles.primaryButton} onPress={handleSubmit}>
-          <Text style={styles.primaryButtonText}>Criar conta</Text>
+        <Pressable
+          style={styles.primaryButton}
+          onPress={handleSubmit}
+          disabled={loading}
+        >
+          <Text style={styles.primaryButtonText}>
+            {loading ? 'Criando conta...' : 'Criar conta'}
+          </Text>
         </Pressable>
 
         <Text style={styles.loginText}>
-          Já tem conta? <Text style={styles.loginLink}>Entrar</Text>
+          Já tem conta?{' '}
+          <Pressable onPress={() => router.push('/login')}>
+            <Text style={styles.loginLink}>Entrar</Text>
+          </Pressable>
         </Text>
       </View>
     </View>

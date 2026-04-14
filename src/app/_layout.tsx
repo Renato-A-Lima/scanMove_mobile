@@ -13,7 +13,11 @@ export default function RootLayout(){
         options={{headerShown: false}}
       />
       <Stack.Screen 
-        name="home"
+        name="(auth)/cadastro"
+        options={{headerShown: false}}
+      />
+      <Stack.Screen 
+        name="telas/home"
         options={{headerShown: false}}
       />
     </Stack>
