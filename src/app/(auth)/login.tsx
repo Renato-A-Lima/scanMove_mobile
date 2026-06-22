@@ -108,10 +108,10 @@ const handleLogin = async () => {
 
 
 //Apenas de exemplo para teste de telas
-// const mudaTela = () =>  {
-//   console.log('Pressionado...')
-//   router.replace('../telas/home');
-// } 
+const mudaTela = () =>  {
+  console.log('Pressionado...')
+  router.replace('../telas/home');
+} 
 const mudaTelaCriarUsuario = () =>  {
   console.log('Pressionado...')
   router.replace('/cadastro');
@@ -183,8 +183,8 @@ const mudaTelaCriarUsuario = () =>  {
             {/* Botão Login */}
             <TouchableOpacity
                 style={[styles.loginButton, loading && { opacity: 0.7 }]}
-                onPress={handleLogin}
-                // onPress={ mudaTela }   // Retirar - é para teste
+                // onPress={handleLogin}
+                onPress={ mudaTela }   // Retirar - é para teste
                 disabled={loading}
             >
                 <Text style={styles.loginButtonText}>
